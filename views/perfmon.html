@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SSNOC Performance</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <script src="script/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <nav class="navbar navbar-default" style="background-color: #8B0000">
+            <div class="container-fluid">
+                <!-- Logo -->
+                <div class="navbar-header">
+                    <a href="#" class="navbar-brand">SSNOC Application</a>
+                </div>
+                <!-- Menu Items -->
+                <div>
+                    <ul class="nav navbar-nav">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">ChatPublic</a></li>
+                        <li><a href="#">ChatPrivate</a></li>
+                        <!-- drop down menu -->
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" style="background-color: #8B0000" data-toggle="dropdown">My Profile <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Friends</a></li>
+                                <li><a href="#">Photos</a></li>
+                                <li><a href="#">Settings</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <!--right align -->
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="#">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <h3>Performance Measurement</h3>
+        <p>Measure the performance of the SSNoC application in terms of throughput: http requests processed by the server per unit time. This does not affect the main system database.</p>
+        <form role="form">
+            <div class="form-group">
+                <label for="inputdefault">Test duration(in seconds)</label>
+                <input class="form-control" id="testTime" type="text">
+            </div>
+            <a href="#" id="start" style="background-color: #8B0000" class="btn btn-info btn-lg">Start</a>
+            <a href="#" id="stop" style="background-color: #8B0000" class="btn btn-info btn-lg">Stop</a>
+            <a href="#" id="pause" style="background-color: #8B0000" class="btn btn-info btn-lg">Pause</a>
+            <h2>Performance statistics</h2>
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>Measurement factor</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total HTTP-POST sent</td>
+                        <td><span id="totalpost"></span></td>
+                    </tr>
+                    <tr>
+                        <td>HTTP-POST through put rate</td>
+                        <td><span id="postpersec"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Average time per HTTP-POST request</td>
+                        <td><span id="avgtimeperpost"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Total HTTP-GET sent</td>
+                        <td><span id="totalget"></span></td>
+                    </tr>
+                    <tr>
+                        <td>HTTP-GET through put rate</td>
+                        <td><span id="getpersec"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Average time per HTTP-GET request</td>
+                        <td><span id="avgtimeperget"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+    <script src="script/perfmon.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Join Community Form</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="script/jquery.min.js"></script>
+    <script src="script/jquery.cookie.js"></script>
+    <!--<script type="text/javascript" src="javascripts/json2.js"></script>-->
+    <script src="/socket.io/socket.io.js"></script>
+    <!--<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
+    <link rel="stylesheet" href="css/chatroom.css">
+</head>
+
+<body>
+    <div id="framework">
+        <div id="chat_board">
+            <div id="announce_table">
+            </div>
+            <div id="dialog_table_dash">
+                <div id="dialog_table">
+                </div>
+            </div>
+            <div id="input_table">
+                <div id="toolbar">
+                    <button id="toolbar_tab1" type="text" onclick="showSendingMessageWin()"> Chat Publicly</button>
+                    <button id="toolbar_tab2" type="text" onclick="showAnnounceMessageWin()"> Announce Message</button>
+                    <button id="toolbar_tab3" type="text" onclick="showShareStatusWin()"> Share Status</button>
+                    <button id="toolbar_tab4" type="text" onclick="showSearchWin()"> Search Info</button>
+                </div>
+                <div id="normalinput_mode">
+                    <div id="input_content" contenteditable="true"></div>
+                    <div id="message">Hi, <span id="from"></span>. You are speaking to <span id="to"></span></div>
+                    <button id="sendButton" type="button" onclick="sendMessageButton()">SEND</button>
+                    <button id="perfButton" type="button" onclick="perfMeasureButton()">MEASURE</button>
+                </div>
+                <div id="announce_mode">
+                    <div id="input_content_an" contenteditable="true"></div>
+                    <div id="message_an">You are posting an announcement!</div>
+                    <button id="postAnnouncement" type="button" onclick="postAnnoucementButton()">ANNOUNCE</button>
+                </div>
+                <div id="sharestatue_mode">
+                    <button class="statusbutton" style="background-color:#0f0" type="button" onclick="changestatusTo(1)">OK</button>
+                    <button class="statusbutton" style="background-color:#ff0" type="button" onclick="changestatusTo(2)">Help</button>
+                    <button class="statusbutton" style="background-color:#f00" type="button" onclick="changestatusTo(3)">Emergency</button>
+                </div>
+                <div id="search_mode">
+                    <select id='search_type'>
+                        <option value="userlistbyname">User List By Name</option>
+                        <option value="userlistbystatus">User List By Status</option>
+                        <option value="announcement">Announcement</option>
+                        <option value="publicchat">Public Chat</option>
+                        <option value="privatechat">Private Chat</option>
+                    </select>
+                    <select id='status_type'>
+                        <option value="0">Undefined</option>
+                        <option value="1">OK</option>
+                        <option value="2">Help</option>
+                        <option value="3">Emergency</option>
+                    </select>
+                    <input id="search_content">
+                    <button id="search" type="button">Search</button>
+                    <button id="load_more" style="display:none;">Load More</button>
+                    </br>
+                    <button id="scroll_up" type="button">Scroll Up</button>
+                    <button id="scroll_down" type="button">Scroll Down</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="user_board">
+        <div id="usersbar">
+            <div id="hideButton" type="text" onclick="hideSideBar()">hide</div>
+            <div id="user_label">
+                User list
+            </div>
+            <div id="users_list">
+                <ul id="list">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="showButton" type="text" onclick="showSideBar()">show user list</div>
+    <div id="logoutButton" type="text" onclick="logoutButton()">log out</div>
+    </div>
+    <script src="script/chatroom.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SSNOC Performance</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="script/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <nav class="navbar navbar-default" style="background-color: #8B0000">
+            <div class="container-fluid">
+                <!-- Logo -->
+                <div class="navbar-header">
+                    <a href="#" class="navbar-brand">SSNOC Application</a>
+                </div>
+                <!-- Menu Items -->
+                <div>
+                    <ul class="nav navbar-nav">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">ChatPublic</a></li>
+                        <li><a href="#">ChatPrivate</a></li>
+                        <!-- drop down menu -->
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" style="background-color: #8B0000" data-toggle="dropdown">My Profile <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Friends</a></li>
+                                <li><a href="#">Photos</a></li>
+                                <li><a href="#">Settings</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <!--right align -->
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="#">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <h3>Performance Measurement</h3>
+        <p>Performance measuement is initiated by Monitor. Please wait till it completes. Thank you.</p>
+    </div>
+    <script src="script/perfmon_msg.js"></script>
+</body>
+
+</html>

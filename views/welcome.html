@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Welcome&ShareStatus</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="script/jquery.min.js"></script>
+    <script src="script/jquery.cookie.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" id="navbar_name">Hello <span id="user"></span></a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <!-- <li><a href="login" onclick="logoutButton()">Log Out</a></li> -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="modal-body">
+            <p class="lead text-center" style="padding-left: 20px;padding-right:20px;font-size:20px;">Welcome to Survivable Social Network on a Chip</p>
+            </br>
+            <p class="text-center">Please share your current status:</p>
+            <div class="center-block" style="max-width: 160px;">
+                <div class="dropdown">
+                    <button class="btn btn-default dropdown-toggle" style="width: 160px;" type="button" data-toggle="dropdown">Undefined
+                        <span class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                        <li><a onclick="changeStatusTo(1)">Okay</a></li>
+                        <li><a onclick="changeStatusTo(2)">Help</a></li>
+                        <li><a onclick="changeStatusTo(3)">Emergency</a></li>
+                    </ul>
+                </div>
+            </div>
+            <!--Spare Button Style input
+                    <div class="center-block" style="max-width: 200px;">
+                    <button id="okay-btn" class="btn btn-success btn-lg btn-block" type="button">Okay</button>
+                    <button id="help-btn" class="btn btn-warning btn-lg btn-block" type="button">Help</button>
+                    <button id="emergency-btn" class="btn btn-danger btn-lg btn-block" type="button">Emergency</button>
+                </div>-->
+            </br>
+            </br>
+            <div class="center-block" style="max-width: 400px;">
+                <p style="margin:0 0 0 0;font-size:12px;"><span class="label label-success">Okay</span> I am OK, I do not need help.</p>
+                <br/>
+                <p style="margin:0 0 0 0;font-size:12px;"><span class="label label-warning">Help</span> I need help, but this is not a life threatening emergency.</p>
+                <br/>
+                <p style="margin:0 0 0 0;font-size:12px;"><span class="label label-danger">Emergency</span> I need help now, as this is a life threatening emergency!</p>
+            </div>
+            </br>
+            <div class="center-block" style="max-width: 130px;">
+                <button id="undefined-btn" class="btn btn-info btn-block" type="button" onclick="changeStatusTo(0)">Let's Start</button>
+            </div>
+        </div>
+    </div>
+    <script src="script/common.js"></script>
+    <script src="script/welcome.js"></script>
+</body>
+
+</html>

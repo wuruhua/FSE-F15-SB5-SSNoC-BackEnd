@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Join Community Form</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="script/jquery.min.js"></script>
+    <!-- Custom styles -->
+    <link href="css/login.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <form class="login_form">
+            <h1>Join Community</h1>
+            <div class="modal-body">
+                <input id="username" type="text" class="form-control" placeholder="Username" required>
+                <input id="password" type="password" class="form-control" placeholder="Password" required>
+                <input id="repassword" type="password" class="form-control" style="display: none;" placeholder="Re-enter Password" required>
+            </div>
+            <div class="modal-footer">
+                <button id="login-btn" class="btn btn-primary btn-lg btn-block" style="display:block;" type="button">Log In</button>
+                <button id="register-btn" class="btn btn-primary btn-lg btn-block" style="display:none;" type="button">Register</button>
+                <button id="register-link" class="btn-link" style="display:block;" type="button">Register</button>
+                <button id="login-link" class="btn-link" style="display:none;" type="button">Log in</button>
+                <div id="statusmsg" type="text"><span>.</span></div>
+            </div>
+        </form>
+    </div>
+    <!-- /container -->
+    <script src="script/login.js"></script>
+</body>
+
+</html>

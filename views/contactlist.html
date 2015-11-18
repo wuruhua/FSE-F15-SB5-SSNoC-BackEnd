@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contactlist</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap-select.css" rel="stylesheet">
+    <script src="script/jquery.min.js"></script>
+    <script src="script/jquery.cookie.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootstrap/js/bootstrap-select.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="css/contactlist.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mySearchbar" title="Toggle Search" style="padding:6px 10px;">
+                    <span class="glyphicon glyphicon-search text-muted"></span>
+                </button>
+                <a class="navbar-brand" id="navbar_name"> <span></span></a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="announcement">Post Announcement</a></li>
+                    <li class="active"><a href="chat">Public Chat</a></li>
+                    <li><a href="contactlist">User List</a></li>
+                    <li class="active"><a href="welcome">Share Status</a></li>
+                    <li><a href="login" onclick="logoutButton()">Log Out</a></li>
+                    <li class="hidden-xs active">
+                        <a type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mySearchbar" title="Toggle Search" style="margin:0px;">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-offset-3 col-sm-6">
+                <div class="panel panel-default">
+                    <ul class="list-group" id="self">
+                        <li class="list-group-item">
+                            <div class="col-xs-3 col-sm-3 li-online">
+                                <img src="img/head.png" class="img-responsive img-circle" />
+                            </div>
+                            <div class="col-xs-9 col-sm-9">
+                                <span class="name" id="user"></span>
+                                <br/>
+                                <div class="dropdown">
+                                    <button id="dropdown_status" class="btn btn-xs btn-success dropdown-toggle" type="button" data-toggle="dropdown">Okay
+                                        <span class="caret"></span></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a onclick="changeStatusTo(1)">Ok</a></li>
+                                        <li><a onclick="changeStatusTo(2)">Help</a></li>
+                                        <li><a onclick="changeStatusTo(3)">Emergency</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </li>
+                    </ul>
+                </div>
+                <!--<div class="panel panel-default">-->
+                <div class="row collapse" id="mySearchbar">
+                    <div class="col-xs-4" style="padding-right:0px;">
+                        <select id="search_user_type" class="selectpicker form-control">
+                            <option>Name</option>
+                            <option>Status</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-8" style="padding-left:0px;">
+                        <div class="input-group c-search">
+                            <input type="text" class="form-control" id="contact-list-search">
+                            <select id="status_type" class="selectpicker">
+                                <option value="0">Undefined</option>
+                                <option value="1">Ok</option>
+                                <option value="2">Help</option>
+                                <option value="3">Emergency</option>
+                            </select>
+                            <span class="input-group-btn">
+                                    <button id="search_user" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search text-muted"></span></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <ul class="list-group" id="contact-list"></ul>
+                </div>
+            </div>
+            <!--<div class="col-xs-12 col-sm-offset-3 col-sm-6">-->
+        </div>
+        <!--<div class="row">-->
+    </div>
+    <!--<div class="container">-->
+    <nav class="navbar navbar-inverse navbar-fixed-bottom" style="bottom:-10px">
+        <div class="container" style="padding:0 0 0 0; width: auto;">
+            <ul class="nav nav-pills text-center">
+                <li class="col-xs-4 col-sm-4" style="padding:0 0 0 0;margin:0 0 0 0;" onclick="publicChatwith()"><a>Chat</a></li>
+                <li class="col-xs-4 col-sm-4" style="padding:0 0 0 0;margin:0 0 0 0;"><a href="announcement">Announcement</a></li>
+                <li class="active col-xs-4 col-sm-4" style="padding:0 0 0 0;margin:0 0 0 0;"><a>Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    <script src="script/common.js"></script>
+    <script src="script/contactlist.js"></script>
+    <script src="script/search.js"></script>
+</body>
+
+</html>

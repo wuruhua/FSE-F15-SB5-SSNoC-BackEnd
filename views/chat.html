@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title id="chat_title">Chat</title>
+    <!-- Bootstrap core CSS -->
+
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+ <link href="bootstrap/css/chatroom.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap-select.css" rel="stylesheet">
+    <script src="script/jquery.min.js"></script>
+    <script src="script/jquery.cookie.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootstrap/js/bootstrap-select.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+   
+
+
+    <link href="css/publicchat.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" style="margin-bottom:0px;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mySearchbar" title="Toggle Search" style="padding:6px 10px;">
+                    <span class="glyphicon glyphicon-search text-muted"></span>
+                </button>
+                <a class="navbar-brand" id="navbar_name">Hello <span>Liyuan Ding</span></a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="announcement">Post Announcement</a></li>
+                    <li class="active" onclick="publicChatwith()"><a>Public Chat</a></li>
+                    <li><a href="contactlist">User List</a></li>
+                    <li class="active"><a href="welcome">Share Status</a></li>
+                    <li><a href="login" onclick="logoutButton()">Log Out</a></li>
+                    <li class="hidden-xs active">
+                        <a type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mySearchbar" title="Toggle Search" style="margin:0px;">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="alert alert-warning" id="announcement_table" style="margin-bottom:0px;height:60px; padding:5px;overflow-y:hidden;">
+    </div>
+    <div class="container" style="width:100%;">
+        <div class="row collapse" id="mySearchbar">
+            <div class="col-xs-4" style="padding:0 0 0 0;">
+                <select id="search_chat_type" class="selectpicker form-control">
+                    <option>Public</option>
+                    <option>Private</option>
+                </select>
+            </div>
+            <div class="col-xs-8" style="padding:0 0 0 0;">
+                <div class="input-group c-search">
+                    <input type="text" class="form-control" id="search_chat_msg">
+                    <span class="input-group-btn">
+                            <button id="search_chat" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search text-muted"></span></button>
+                    </span>
+                    <span class="input-group-btn">
+                        <button id="load_more" class="btn btn-info btn-block">More</button>
+                        </span>
+                </div>
+            </div>
+        </div>
+        <div class="row chat-window" id="chat_window_1" style="height: 100%; padding: 0 0 185px 0px;">
+            <div class="panel-body msg_container_base" id="dialog_table" style="height: 100%;"></div>
+            <div class="panel-footer" style="padding:0 0 0 0px">
+                <div class="input-group" style="right:15px;">
+
+                    <input id="input_content" type="text" class="form-control input-md chat_input" placeholder="Write your message here..." >
+                    <input/>
+
+                    <span class="input-group-btn">
+                    <!--  <a id="send" class="btn btn-primary btn-sm" >Send</a>-->
+                    
+                    </span>
+                   <label for="uploadfile" class="input-group-btn">
+                      
+                        <img src="img/camera.png" type="button"  />
+                        <input id="uploadfile" type="file" accept="image/*,video/*" hidden="hidden" onchange="uploadFile(this);"/>
+                  
+                   
+                     </label>
+                 
+
+                
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar navbar-inverse navbar-fixed-bottom" style="bottom:-10px;">
+        <div class="container" style="padding:0 0 0 0; width: auto;">
+            <ul class="nav nav-pills text-center">
+                <li class="active col-xs-4 col-sm-4" style="padding:0 0 0 0;margin:0 0 0 0;" onclick="publicChatwith()"><a>Chat</a></li>
+                <li class="col-xs-4 col-sm-4" style="padding:0 0 0 0;margin:0 0 0 0;"><a href="announcement">Announcement</a></li>
+                <li class="col-xs-4 col-sm-4" style="padding:0 0 0 0;margin:0 0 0 0;"><a href="contactlist">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    <script src="script/common.js"></script>
+    <script src="script/chat.js"></script>
+    <script src="script/search.js"></script>
+</body>
+
+</html>

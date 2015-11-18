@@ -1,13 +1,46 @@
 {
-  "name": "SSNOC",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-  "start": "node app"
-  },
+  "name": "test",
+  "version": "0.0.2",
+  "description": "FSE team project",
   "dependencies": {
-    "express": "3.0.1",
-    "sqlite3":"~3.0.8",
-    "socket.io": ">=0.9.16"
-  }
+    "body-parser": "^1.14.1",
+    "connect": "^3.4.0",
+    "ejs": "^2.3.3",
+    "express": "^4.13.1",
+    "grunt-cli": "^0.1.13",
+    "istanbul": "^0.4.0",
+    "jquery": "^2.1.4",
+    "md5": "^2.0.0",
+    "mocha": "^2.3.3",
+    "path": "^0.11.14",
+    "socket.io": "^1.3.6",
+    "sqlite3": "^3.1.0"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "grunt": "^0.4.5",
+    "grunt-mocha-istanbul": "^3.0.1",
+    "grunt-mocha-test": "^0.12.7",
+    "istanbul": "^0.4.0",
+    "mocha": "^2.3.3",
+    "mocha-junit-reporter": "^1.9.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmusv-fse/FSE-F15-SB5-SSNoC-Stars.git"
+  },
+  "author": "fiona",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cmusv-fse/FSE-F15-SB5-SSNoC-Stars/issues"
+  },
+  "homepage": "https://github.com/cmusv-fse/FSE-F15-SB5-SSNoC-Stars#readme"
 }
