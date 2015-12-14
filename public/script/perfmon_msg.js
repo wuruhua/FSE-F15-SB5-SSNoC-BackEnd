@@ -1,7 +1,7 @@
 function init() {
     var socket = io.connect();
-    socket.on('chatroom', function() {
-        $(window.location).attr('href', '/chatroom');
+    socket.on('chatroom', function(data) {
+        $(window.location).attr('href', "/chat");
     });
 }
 

@@ -1,16 +1,19 @@
-module.exports = function(app, db, userBiz, publicMsgBiz, privMsgBiz, perfMonBiz) {
+module.exports = function(app, db, userBiz,  perfMonBiz, adminBiz, controller) {
     //var publicMsgBiz  = require("./app/controller/publicMsgBiz");
 
     app.get('/users', userBiz.getAllUser);
     app.post('/user/login', userBiz.login);
     app.post('/user/register', userBiz.register);
+    app.post('/admin/setpri', adminBiz.setpri);
+    app.post('/admin/setactive', adminBiz.setactive);
+    app.post('/admin/setuserinfo', adminBiz.setuserinfo);
+    app.get('/admin/iscitizen', adminBiz.iscitizen);
+    app.get('/admin/isadmin', adminBiz.isadmin);
+    app.get('/admin/ismonitor', adminBiz.ismonitor);
+
     app.post('/user/setAudience', function(req, res) {
-        //console.log("Inside setAudience=============>");
+        // console.log("Inside setAudience=============>");
         userBiz.setAudience(req, res);
-    });
-    app.get('/chatroom', function(req, res) {
-        res.render('chatroom');
-        //res.render('chatroom');
     });
     app.get('/perfmon', function(req, res) {
         res.render('perfmon');
@@ -18,7 +21,6 @@ module.exports = function(app, db, userBiz, publicMsgBiz, privMsgBiz, perfMonBiz
     });
     app.get('/perfmon_msg', function(req, res) {
         res.render('perfmon_msg');
-        //res.render('perfmon');
     });
     app.get('/login', function(req, res) {
         res.render('login');
@@ -36,32 +38,44 @@ module.exports = function(app, db, userBiz, publicMsgBiz, privMsgBiz, perfMonBiz
     app.get('/announcement', function(req, res) {
         res.render('announcement');
     });
+    app.get('/404', function(req, res) {
+        res.render('404');
+    });
+    app.get('/administrator', function(req, res) {
+        res.render('administrator');
+    });
     app.get('/db/delete', userBiz.delDB);
     app.get('/user/getPublicMessages', function(req, res) {
-        //console.log("Calling publicMsgBiz.getMessages for ");
-        publicMsgBiz.getMessages(req, res);
+        controller.loadpublicmsg(req, res);
     });
 
     app.post('/user/postPublicMsg', function(req, res) {
-        //console.log("Calling publicMsgBiz.saveMessage for ");
-        publicMsgBiz.saveMessage(req, res);
+        controller.chatpublic(req, res);
+    });
+
+    app.post('/user/postAnnouncement', function(req, res) {
+        controller.postAnnouncement(req, res);
     });
     //TestCase
     app.post('/search/userlistbyname', userBiz.searchbyName);
     app.post('/search/userlistbystatus', userBiz.searchbyStatus);
-    app.post('/search/announcement', publicMsgBiz.searchAnnouncements);
-    app.post('/search/publicmsg', publicMsgBiz.searchPublicMsgs);
-    app.post('/search/privatemsg', privMsgBiz.searchPrivMsgs);
-
-    // app.get('/user/testlogin', userBiz.testlogin);
+    //app.post('/search/announcement', publicMsgBiz.searchAnnouncements);
+    app.post('/search/announcement', controller.searchannouncement);
+   //app.post('/search/publicmsg', publicMsgBiz.searchPublicMsgs);
+    app.post('/search/publicmsg', controller.searchpublicmsg);
+    //app.post('/search/privatemsg', privMsgBiz.searchPrivMsgs);
+    app.post('/search/privatemsg', controller.searchprivatemsg);
+    
     app.post('/user/getPrivateMessage', function(req, res) {
         //console.log("Calling privMsgBiz.getPrivMessages for ");
-        privMsgBiz.getPrivMessages(req, res);
+        //privMsgBiz.getPrivMessages(req, res);
+        controller.loadprivatemsg(req, res);
     });
 
     app.post('/user/postPrivateMessage', function(req, res) {
         //console.log("Calling privMsgBiz.getPrivMessages for ");
-        privMsgBiz.savePrivMessages(req, res);
+        // privMsgBiz.savePrivMessages(req, res);
+        controller.chatprivate(req, res);
     });
 
     app.post('/user/perfSetup', function(req, res) {

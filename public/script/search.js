@@ -1,5 +1,6 @@
 var dialog_table = getNode('dialog_table');
 var announcement_table = getNode("announcement_table");
+var user_name = $.cookie('user');
 $("#status_type").selectpicker('hide');
 $("#load_more").hide();
 $("#search_chat").click(function() {
@@ -18,30 +19,48 @@ $("#search_chat").click(function() {
         type: 'post',
         crossDomain: true,
         data: {
+            username: user_name,
             message: search_content
         },
         dataType: "json",
         success: function(data) {
             $("#load_more").hide();
             var count = 0;
-            addMessageFromOthers("admin", data.message, getDate(getTimestamp()), "Status: OK @00:00:00 AM");
+            var i = 0;
+            addMessageFromOthers("admin", 0, data.message, getDate(getTimestamp()), "Status: OK @00:00:00 AM");
             if (type == "Public") {
                 if (data.publicmsg.length > 10) {
-                    for (var i = 0; i < 10; i++) {
+                    for (i = 0; i < 10; i++) {
                         if (data.publicmsg[i].src == user_name) {
-                            addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            if (data.publicmsg[i].is_voice == 1) {
+                                addVoiceMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].ismsg,data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts, data.publicmsg[i].dur);
+                            } else {
+                                addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            }
                         } else {
-                            addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            if (data.publicmsg[i].is_voice == 1) {
+                                addVoiceMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts, data.publicmsg[i].dur);
+                            } else {
+                                addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            }
                         }
                     }
                     count = count + 10;
                     $("#load_more").show();
                 } else {
-                    for (var i = 0; i < data.publicmsg.length; i++) {
+                    for (i = 0; i < data.publicmsg.length; i++) {
                         if (data.publicmsg[i].src == user_name) {
-                            addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            if (data.publicmsg[i].is_voice == 1) {
+                                addVoiceMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts, data.publicmsg[i].dur);
+                            } else {
+                                addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            }
                         } else {
-                            addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            if (data.publicmsg[i].is_voice == 1) {
+                                addVoiceMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts, data.publicmsg[i].dur);
+                            } else {
+                                addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            }
                         }
                     }
                 }
@@ -51,9 +70,17 @@ $("#search_chat").click(function() {
                         for (var i = count; i < count + 10; i++) {
                             if (i < data.publicmsg.length) {
                                 if (data.publicmsg[i].src == user_name) {
-                                    addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                                    if (data.publicmsg[i].is_voice == 1) {
+                                        addVoiceMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts, data.publicmsg[i].dur);
+                                    } else {
+                                        addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                                    }
                                 } else {
-                                    addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                                    if (data.publicmsg[i].is_voice == 1) {
+                                        addVoiceMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts, data.publicmsg[i].dur);
+                                    } else {
+                                        addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].ismsg, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                                    }
                                 }
                             }
                         }
@@ -66,38 +93,38 @@ $("#search_chat").click(function() {
             }
             if (type == "Private") {
                 if (data.privatemsg.length > 10) {
-                    for (var i = 0; i < 10; i++) {
+                    for (i = 0; i < 10; i++) {
                         if (data.privatemsg[i].src == user_name) {
-                            addMessageFromSelf(data.privatemsg[i].src, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
+                            addMessageFromSelf(data.privatemsg[i].src, data.privatemsg[i].ismsg, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts, data.privatemsg[i].dur);
                         } else {
-                            addMessageFromOthers(data.privatemsg[i].src, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
+                            addMessageFromOthers(data.privatemsg[i].src, data.privatemsg[i].ismsg, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
                         }
                     }
                     count = count + 10;
                     $("#load_more").show();
                 } else {
-                    for (var i = 0; i < data.privatemsg.length; i++) {
+                    for (i = 0; i < data.privatemsg.length; i++) {
                         if (data.privatemsg[i].src == user_name) {
-                            addMessageFromSelf(data.privatemsg[i].src, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
+                            addMessageFromSelf(data.privatemsg[i].src, data.privatemsg[i].ismsg, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts, data.privatemsg[i].dur);
                         } else {
-                            addMessageFromOthers(data.privatemsg[i].src, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
+                            addMessageFromOthers(data.privatemsg[i].src, data.privatemsg[i].ismsg, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
                         }
                     }
                 }
                 $("#load_more").click(function() {
                     $("#load_more").hide();
-                    if (count < data.publicmsg.length) {
+                    if (count < data.privatemsg.length) {
                         for (var i = count; i < count + 10; i++) {
-                            if (i < data.publicmsg.length) {
-                                if (data.publicmsg[i].src == user_name) {
-                                    addMessageFromSelf(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                            if (i < data.privatemsg.length) {
+                                if (data.privatemsg[i].src == user_name) {
+                                    addMessageFromSelf(data.privatemsg[i].src, data.privatemsg[i].ismsg, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts, data.privatemsg[i].dur);
                                 } else {
-                                    addMessageFromOthers(data.publicmsg[i].src, data.publicmsg[i].content, data.publicmsg[i].gmt_create, data.publicmsg[i].usr_sts);
+                                    addMessageFromOthers(data.privatemsg[i].src, data.privatemsg[i].ismsg, data.privatemsg[i].content, data.privatemsg[i].gmt_create, data.privatemsg[i].usr_sts);
                                 }
                             }
                         }
                         count = count + 10;
-                        if (count < data.publicmsg.length) {
+                        if (count < data.privatemsg.length) {
                             $("#load_more").show();
                         }
                     }
@@ -162,17 +189,18 @@ $("#search_announcement").click(function() {
         dataType: "json",
         success: function(data) {
             var count = 0;
+            var i = 0;
             announcement_table.textContent = "";
             var rows = data.announcement;
             addAnnouncementMsg(data.message, "admin", getDate(getTimestamp()));
             if (rows.length > 10) {
-                for (var i = 0; i < 10; i++) {
+                for (i = 0; i < 10; i++) {
                     addAnnouncementMsg(rows[i].content, rows[i].src, rows[i].gmt_create);
                 }
                 count = count + 10;
                 $("#load_more").show();
             } else {
-                for (var i = 0; i < rows.length; i++) {
+                for (i = 0; i < rows.length; i++) {
                     addAnnouncementMsg(rows[i].content, rows[i].src, rows[i].gmt_create);
                 }
             }
@@ -206,7 +234,7 @@ $("#search_user_type").on('change', function() {
         $("#contact-list-search").show();
         $("#status_type").selectpicker('hide');
     }
-})
+});
 
 function cleanchild(myNode) {
     while (myNode.firstChild) {

@@ -4,28 +4,70 @@ var dialog_table = getNode('dialog_table');
 var navbar_name = getNode("navbar_name");
 var announcement_table = getNode('announcement_table');
 var chat_title = getNode('chat_title');
+var in_private = false;
+
 var user_name = $.cookie('user');
 var to_name = $.cookie('audience');
-var in_private = false;
+
 var message_container;
 var message_frame;
 var message;
-var currentUserSts;
+
 var socket = io.connect();
+
 var whitespacePattern = /^\s*$/; //used to test if a string is only consist of spaces
 socket.emit('sendAn', "All");
 
-$(document).ready(function() {
-    //console.log("ready!");
-    //console.log("chat Name:" + user_name + " Audience:" + to_name);
+$.ajax({
+    url: '/users',
+    type: 'get',
+    crossDomain: true,
+    success: function(data) {
+        //reload the page on the success
+    }
+});
 
-    //change name on Nav bar
-    //console.log(navbar_name.textContent);
+$(document).ready(function() {
+    if ($.cookie("audience") && $.cookie("audience") != "private") {
+        in_private = true;
+    }
+    if(to_name !== null && to_name.length>0){
+        $("#uploadfile_id").hide();
+    }
+    console.log("ready!");
+    console.log("chat Name:" + user_name + " Audience:" + to_name);
+    console.log("Emitting PerfCheck");
+    socket.emit('PerfCheck', "chat");
+
+    socket.on('newuser', user_name);
+    //Receive and update user list. Note: the user list can only be added or updated. No deleted is of user case
+    socket.on('PerfGet', function() {
+        //local_user_list[nameCard.name] = nameCard.status;
+        //console.log("update list");
+        $(window.location).attr('href', '/perfmon_msg');
+
+    });
+
+    //     navbar_name.textContent = 'Hi ' + user_name;
+
+    //     if (to_name) {
+
+    //         getPrivateMessage(to_name);
+    //         chat_title.textContent = 'Chat with ' + to_name;
+    //     } else {
+
+    //         getPublicMessage();
+    //         chat_title.textContent = 'Public Chat';
+    //     }
+    //     socket.emit('sendstatus', "All");
+    // });
+
     navbar_name.textContent = 'Hi ' + user_name;
     if (to_name) {
         getPrivateMessage(to_name);
         chat_title.textContent = 'Chat with ' + to_name;
     } else {
+
         getPublicMessage();
         chat_title.textContent = 'Public Chat';
     }
@@ -33,16 +75,50 @@ $(document).ready(function() {
 });
 
 
+$('#perfmon').on('click', function() {
+
+    checkmonitor();
+    console.log("perfmon clicked");
+
+    console.log("perfMeasureButton"); {
+        var date = new Date();
+        var timestamp = Date.parse(new Date()) / 1000;
+
+        var announcedata = {
+            name: user_name,
+            ismsg: 0,
+            msg: "performance on",
+            time: getDate(timestamp),
+            page: "chat"
+        };
+
+        $.ajax({
+            url: '/user/postAnnouncement',
+            type: 'post',
+            crossDomain: true,
+            data: announcedata,
+            dataType: 'json',
+            success: function(data) {
+                //reload the page on the success
+                if (data.success === false) {
+                    alert(data.message);
+                }
+            }
+        });
+    }
+
+});
+
 $('#send').on('click', function() {
     var textMsg = $(input_content).val();
     //console.log("Inside send" + textMsg);
-    if (textMsg != "" && !whitespacePattern.test(textMsg)) {
+    if (textMsg !== "" && !whitespacePattern.test(textMsg)) {
         //console.log("Sent message valid");
-        var date = new Date;
+        var date = new Date();
         var timestamp = Date.parse(new Date()) / 1000;
         var user;
         //console.log("currentUserSts:" + currentUserSts);
-        if (currentUserSts != 0 && currentUserGmtSts != 0) {
+        if (currentUserSts !== 0 && currentUserGmtSts !== 0) {
             switch (currentUserSts) {
                 //New field status = "ok", 'help', 'emergency' or 'undefined'
                 case 1:
@@ -70,12 +146,12 @@ $('#send').on('click', function() {
             user = '(Status: OK @' + currentUserGmtSts + ')';
         }
 
-        if (to_name == "") {
+        if (to_name === null || to_name.length === 0) {
             var wallMsg = {
                 name: user_name,
                 msg: textMsg,
-                ismsg:0,
-                time: getDate(timestamp),
+                ismsg: 0,
+                time: timestamp,
                 usersts: user
             };
 
@@ -94,13 +170,14 @@ $('#send').on('click', function() {
             });
 
         } else {
+
             var privateMsg = {
                 cont: textMsg,
                 author: user_name,
                 targ: to_name,
                 postedAt: getDate(timestamp),
                 usersts: user,
-                ismsg:0
+                ismsg: 0
             };
 
             socket.emit('sendPrivateMessage', privateMsg);
@@ -122,20 +199,52 @@ $('#send').on('click', function() {
     }
 });
 
-socket.on('updateUserList', function(list){
+socket.on('updateUserList', function(list) {
     //local_user_list[nameCard.name] = nameCard.status;
     //console.log("update list");
     sortAndUpdateUserList(list);
 });
 
 socket.on(user_name, function(data) {
-    if(to_name!=""){
-        addMessageForSelfWall(data.author, data.cont, data.postedAt, data.usersts);
+    if (to_name !== null && to_name.length > 0) { //in chat_private mode
+        if (to_name === data.author) { // currently chat with data.author
+            addMessageForSelfWall(data.author, data.ismsg, data.cont, data.postedAt, data.usersts);
+        } else { //currently chat with person other than data.author
+            if (data.author === user_name) { // if user_name initiate the private talk
+                addMessageForSelfWall(data.author, data.ismsg, data.cont, data.postedAt, data.usersts);
+            } else {
+                $.notify({
+                    message: "<string>" + data.author + "<strong> sent you a private message <button type='text' onclick=privateChatwith('" + data.author + "')>Chat</button>"
+                }, {
+                    type: 'success',
+                    offset: {
+                        x: 20,
+                        y: 55
+                    },
+                    delay: 50000,
+                });
+                createCookie('new_msg_' + data.author, 1, 100);
+            }
+
+        }
+
+    } else { //in chat_public mode
+        $.notify({
+            message: "<string>" + data.author + "<strong> sent you a private message <button type='text' onclick=privateChatwith('" + data.author + "')>Chat</button>"
+        }, {
+            type: 'success',
+            offset: {
+                x: 20,
+                y: 55
+            },
+            delay: 50000,
+        });
+        createCookie('new_msg_' + data.author, 1, 100);
     }
 });
 
 //socket.on('dialog_entry', function(dialog_entry){
-//	console.log('See dialog_entry');
+//  console.log('See dialog_entry');
 //console.log(dialog_entry);
 //var message = document.createElement('div');
 //message.setAttribute('class','dialog_entry');
@@ -144,28 +253,31 @@ socket.on(user_name, function(data) {
 //append message to the last
 //dialog_table.appendChild(message);
 //dialog_table.insertBefore(message, null);
-//updateScroll(dialog_table);
+//dialog_table.scrollTop = dialog_table.scrollHeight;
 //});
+
 //receive the wall message broadcast from server
 socket.on('getWallMessage', function(data) {
     //console.log("dialog_entry.name" + dialog_entry.name);
     //console.log("user_name" + user_name);
-    if(to_name==""){
-        addMessageForSelfWall(data.name, data.msg, data.time, data.usersts);
+    if (to_name === null || to_name.length === 0) {
+        addMessageForSelfWall(data.name, data.ismsg, data.msg, data.time, data.usersts);
     }
     //if(to_name){
-    /*	if(dialog_entry.name == to_name) 
-    	{
-    		console.log("From others");
-    		addMessageFromOthers(dialog_entry);
-    	}
-    	if(dialog_entry.name == user_name)
-    	{
-    		console.log("From self");
-    		addMessageFromSelf(dialog_entry);
-    	}*/
+    /*  if(dialog_entry.name == to_name) 
+     {
+     console.log("From others");
+     addMessageFromOthers(dialog_entry);
+     }
+     if(dialog_entry.name == user_name)
+     {
+     console.log("From self");
+     addMessageFromSelf(dialog_entry);
+     }*/
     //}
 });
+
+
 
 socket.on('load announce', function(rows) {
     //console.log("char_announcement_rows:" + rows.length);
@@ -175,16 +287,27 @@ socket.on('load announce', function(rows) {
     }
 });
 
+
 socket.on('announcement', function(data) {
+
 
     addAnnouncementMsg(data.msg, data.name, data.time);
 
-});
-//support for uploading video/image
+    if (data.msg == "performance on") {
+        if (data.name == user_name) {
+            $.cookie("perf_master", "chat");
+            $(window.location).attr('href', '/perfmon');
+        } else {
+            $.cookie("perf_slave", "chat");
+            $(window.location).attr('href', '/perfmon_msg');
 
+        }
+    }
+
+});
 socket.on('newfile', function(msg) {
     console.log("received newfile event");
-    
+
     var username = msg.name;
     // var formdata = new FormData(msg.msg);
     //var data = msg.msg;
@@ -196,7 +319,6 @@ socket.on('newfile', function(msg) {
     console.log("finished newfile event!");
 });
 
-
 function getShortDate(timestamp) {
     var localeSpecificTime = new Date(parseInt(timestamp) * 1000).toLocaleTimeString();
     return localeSpecificTime;
@@ -204,7 +326,7 @@ function getShortDate(timestamp) {
 
 //Update variable user_list and update the content of user_list on client side
 function sortAndUpdateUserList(rows) {
-    //console.log("namelist:"sortAndUpdateUserList);
+    //console.log("namelist:");
 
     //sort the user list
     //users_list.textContent = '';
@@ -216,9 +338,12 @@ function sortAndUpdateUserList(rows) {
                 currentUserSts = rows[i].status;
                 currentUserGmtSts = getShortDate(rows[i].gmt_status);
             }
+
         }
+
     }
 }
+
 
 function getPrivateMessage(from_who) {
     console.log("getPrivateMessage");
@@ -233,16 +358,16 @@ function getPrivateMessage(from_who) {
         crossDomain: true,
         dataType: 'json'
     }).done(function(rows) {
-        if (rows != null) {
-           
+        if (rows !== null) {
+
            
             dialog_table.innerHTML = "";
 
             for (var i = 0; i < rows.length; i++) {
                 if (rows[i].src == user_name) {
-                    addMessageFromSelf(rows[i].src, rows[i].content, rows[i].gmt_create, rows[i].usr_sts);
+                    addMessageFromSelf(rows[i].src, rows[i].ismsg, rows[i].content, rows[i].gmt_create, rows[i].usr_sts);
                 } else {
-                    addMessageFromOthers(rows[i].src, rows[i].content, rows[i].gmt_create, rows[i].usr_sts);
+                    addMessageFromOthers(rows[i].src, rows[i].ismsg, rows[i].content, rows[i].gmt_create, rows[i].usr_sts);
                 }
             }
         }
@@ -251,6 +376,7 @@ function getPrivateMessage(from_who) {
     });
 
 }
+
 
 function getPublicMessage() {
     //console.log("getPublicMessage");
@@ -261,13 +387,13 @@ function getPublicMessage() {
         dataType: "json"
     }).done(function(rows) {
 
-        if (rows != null) {
+        if (rows !== null) {
             console.log("REST API sent successfully");
 
             dialog_table.innerHTML = "";
 
             for (var i = 0; i < rows.length; i++) {
-               // console.log(rows[i].content);
+                // console.log(rows[i].content);
                 if (rows[i].src == user_name) {
                     addMessageFromSelf(rows[i].src, rows[i].ismsg, rows[i].content, rows[i].gmt_create, rows[i].usr_sts);
                 } else {
@@ -283,7 +409,7 @@ function getPublicMessage() {
     });
 }
 
-function addMessageForSelfWall(name,ismsg, msg, time, usersts) {
+function addMessageForSelfWall(name, ismsg, msg, time, usersts) {
     //console.log("For Self Wall=======>");
     //console.log("data.name: " + data.name);
     //console.log("data.usersts: " + data.usersts);
@@ -293,14 +419,13 @@ function addMessageForSelfWall(name,ismsg, msg, time, usersts) {
     if (name == user_name) {
         addMessageFromSelf(name, ismsg, msg, time, usersts);
     } else {
-        addMessageFromOthers(name,ismsg, msg, time, usersts);
+        addMessageFromOthers(name, ismsg, msg, time, usersts);
     }
-
 }
 
 function addMessageFromSelf(name, ismsg, content, time, status) {
     //console.log("rows[i].is_online: " + rows[i].is_online);
-    console.log("From Self=======>");
+    //console.log("From Self=======>");
 
     //console.log("rows[i].usersts: " + data.usr_sts);
 
@@ -312,17 +437,17 @@ function addMessageFromSelf(name, ismsg, content, time, status) {
     message_frame.setAttribute('style', 'padding-right:0px;');
     message = document.createElement('div');
     message.setAttribute('class', 'messages msg_sent');
-    
 
-   // console.log("data.msg" + content);
+
+    // console.log("data.msg" + content);
 
     msg_content = document.createElement('p');
-   // msg_content.textContent = content;
-   if (ismsg== 1) {
-      msg_content.innerHTML =  '<a href="' + content + '" target="_blank"> <img src="' + content + '" width ="100" /></a>';
-    } else if (ismsg==2) {
-        msg_content.innerHTML = '<video width="400" controls><source src="'+ content + '" type="video/mp4"></video>';
-    } else{
+    // msg_content.textContent = content;
+    if (ismsg == 1) {
+        msg_content.innerHTML = '<a href="' + content + '" target="_blank"> <img src="' + content + '" width ="100" /></a>';
+    } else if (ismsg == 2) {
+        msg_content.innerHTML = '<video width="400" controls><source src="' + content + '" type="video/mp4"></video>';
+    } else {
         msg_content.textContent = content;
     }
     msg_usertime = document.createElement('time');
@@ -363,7 +488,7 @@ function addMessageFromSelf(name, ismsg, content, time, status) {
     // console.log("msg_content" + msg_content.textContent);
     // console.log("msg_usertime" + msg_usertime.textContent);
     // console.log("message" + message.textContent);
-    
+
     // if (filetype== 1) {
     //     msgToDisplay.innerHTML = user + '<span class="timespan">(' + date + '): </span> <br/>' + '<img src="' + file + '" width="100" height="150"/>';
     // } else if (filetype==2) {
@@ -382,10 +507,10 @@ function addMessageFromSelf(name, ismsg, content, time, status) {
     dialog_table.appendChild(avatar_message_container);
     dialog_table.insertBefore(avatar_message_container, null);
 
-    updateScroll(dialog_table);
+    dialog_table.scrollTop = dialog_table.scrollHeight;
 }
 
-function addMessageFromOthers(name,ismsg, content, time, status) {
+function addMessageFromOthers(name, ismsg, content, time, status) {
     console.log("From others=======>");
     //console.log("content :" + content);
     console.log("name: " + name);
@@ -410,13 +535,13 @@ function addMessageFromOthers(name,ismsg, content, time, status) {
 
     // msg_content = document.createElement('p');
     // msg_content.textContent = content;
-     msg_content = document.createElement('p');
-   // msg_content.textContent = content;
-   if (ismsg== 1) {
-      msg_content.innerHTML ='<a href="' + content + '" target="_blank"> <img src="' + content + '" width ="100" /></a>';
-    } else if (ismsg==2) {
-        msg_content.innerHTML = '<video width="400" controls><source src="'+ content + '" type="video/mp4"></video>';
-    } else{
+    msg_content = document.createElement('p');
+    // msg_content.textContent = content;
+    if (ismsg == 1) {
+        msg_content.innerHTML = '<a href="' + content + '" target="_blank"> <img src="' + content + '" width ="100" /></a>';
+    } else if (ismsg == 2) {
+        msg_content.innerHTML = '<video width="400" controls><source src="' + content + '" type="video/mp4"></video>';
+    } else {
         msg_content.textContent = content;
     }
 
@@ -456,7 +581,7 @@ function addMessageFromOthers(name,ismsg, content, time, status) {
     dialog_table.appendChild(avatar_message_container);
     dialog_table.insertBefore(avatar_message_container, null);
 
-    updateScroll(dialog_table);
+    dialog_table.scrollTop = dialog_table.scrollHeight;
 }
 
 function addAnnouncementMsg(content, src, gmt_create) {
@@ -475,36 +600,15 @@ function addAnnouncementMsg(content, src, gmt_create) {
     announcement_table.appendChild(announce_frame);
     announcement_table.insertBefore(announce_frame, null);
 
-    updateScroll(announcement_table);
+    announcement_table.scrollTop = announcement_table.scrollHeight;
 }
 
-
-// document.getElementById('sendImage').addEventListener('change', function() {
-//             if (this.files.length != 0) {
-//                 var file = this.files[0],
-//                     reader = new FileReader(),
-//                     color = document.getElementById('colorStyle').value;
-//                 if (!reader) {
-//                     that._displayNewMsg('system', '!your browser doesn\'t support fileReader', 'red');
-//                     this.value = '';
-//                     return;
-//                 };
-//                 reader.onload = function(e) {
-//                     this.value = '';
-//                     that.socket.emit('img', e.target.result, color);
-//                     that._displayImage('me', e.target.result, color);
-//                 };
-//                 reader.readAsDataURL(file);
-//             };
-//         }, false);
-
-//TODO: currently name button id as uploadfile
-function openWindow () {
+function openWindow() {
     document.getElementById("uploadfile").onchange();
 
 }
 
-function uploadFile(input) {    
+function uploadFile(input) {
     console.log("enter upload button process!");
     if (input.files && input.files[0]) {
         var file = input.files[0];
@@ -513,11 +617,11 @@ function uploadFile(input) {
 
         // }
         // console.log(file.size);
-        var filetype = checkFileType(file);  
+        var filetype = checkFileType(file);
 
         var reader = new FileReader();
         // var username = user_name;
-        
+
         reader.fileName = file.name;
 
         reader.onload = function(event) {
@@ -526,7 +630,7 @@ function uploadFile(input) {
             // console.log("username of file: "+username);
             // console.log("filetype from reader: "+filetype);
 
-            var date = new Date;
+            var date = new Date();
             // var filename = encodeURIComponent(reader.result);
             var filename = event.target.fileName;
             console.log("filename = " + filename);
@@ -548,7 +652,7 @@ function uploadFile(input) {
             var timestamp = Date.parse(date) / 1000;
             var user;
             //console.log("currentUserSts:" + currentUserSts);
-            if (currentUserSts != 0 && currentUserGmtSts != 0) {
+            if (currentUserSts !== 0 && currentUserGmtSts !== 0) {
                 switch (currentUserSts) {
                     //New field status = "ok", 'help', 'emergency' or 'undefined'
                     case 1:
@@ -581,7 +685,7 @@ function uploadFile(input) {
                 msg: event.target.result,
                 //msg: msg,
                 ismsg: filetype,
-                time: getDate(timestamp),
+                time: timestamp,
                 usersts: user
             };
 
@@ -603,8 +707,8 @@ function uploadFile(input) {
             // displayUploadFile('me', e.target.result, filetype);
         };
         reader.readAsDataURL(file);
-    };
-};
+    }
+}
 
 
 function displayUploadFile(user, file, filetype) {
@@ -615,14 +719,16 @@ function displayUploadFile(user, file, filetype) {
     var msgToDisplay = document.createElement('p'),
         date = new Date().toTimeString().substr(0, 8);
     // msgToDisplay.style.color = color || '#000';
-    if (filetype== 1) {
-        msgToDisplay.innerHTML = user + '<span>(' + date + '): </span> <br/>' +  '<a href="' + file+ '" target="_blank"> <img src="' + file + '" width ="100" /></a>'
-    } else if (filetype==2) {
-        msgToDisplay.innerHTML = user + '<span class="timespan">(' + date + '): </span> <br/>' + '<video width="400" controls><source src="'+ file + '" type="video/mp4"></video>';
-    } 
+    if (filetype == 1) {
+        msgToDisplay.innerHTML = user + '<span>(' + date + '): </span> <br/>' + '<a href="' + file + '" target="_blank"> <img src="' + file + '" width ="100" /></a>';
+    } else if (filetype == 2) {
+        msgToDisplay.innerHTML = user + '<span class="timespan">(' + date + '): </span> <br/>' + '<video width="400" controls><source src="' + file + '" type="video/mp4"></video>';
+    }
     // msgToDisplay.innerHTML = user + '<span class="timespan">(' + date + '): </span> <br/>' + '<video width="400" controls><source src="'+ file + '" type="video/mp4"></video>';
     dialog_table.appendChild(msgToDisplay);
-    updateScroll(dialog_table);
+
+    dialog_table.scrollTop = dialog_table.scrollHeight;
+    //this.getPublicMessage();
 }
 
 

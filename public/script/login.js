@@ -13,8 +13,8 @@ $("#login-btn").click(function() {
     //set the inform to default
     $("#statusmsg").html("");
     //if the username and password is empty, inform the user
-    if ($("#username").val() == "" || $("#password").val() == "") {
-        $("#statusmsg").html("username and password can't be empty");
+    if ($("#username").val() === "" || $("#password").val() === "") {
+        $("#statusmsg").html("Username and password can't be empty!");
     } else {
         //post request of login
         $.ajax({
@@ -28,21 +28,10 @@ $("#login-btn").click(function() {
             dataType: "json",
             success: function(data) {
                 //data.success is true: login success
-                if (data.success == true) {
+                if (data.success === true) {
                     $(window.location).attr('href', '/contactlist');
                 } else {
-                    //data.success is false: login fail
-                    //data.code is 2: name is not existed
-                    if (data.code == 12) {
-                        //register();
-                        $("#statusmsg").html(data.message);
-                    }
-                    //data.code is 3: name is existed but password is wrong
-                    else if (data.code == 13) {
-                        $("#statusmsg").html(data.message);
-                    } else {
-                        //alert("Unhandled error!")
-                    }
+                    $("#statusmsg").html(data.message);
                 }
             },
             error: function() {
@@ -52,28 +41,30 @@ $("#login-btn").click(function() {
     }
 });
 
+
+
 $("#register-btn").click(function() {
     //set the inform to be default
     $("#statusmsg").html("");
-    //console.log("1-1");
+    console.log("1-1");
     //if the username, password and repassword is empty, inform the user
-    if ($("#username").val() == "" || $("#password").val() == "" || $("#repassword").val() == "") {
-        //console.log("1");
-        $("#statusmsg").html("username and password can't be empty");
+    if ($("#username").val() === "" || $("#password").val() === "" || $("#repassword").val() === "") {
+        console.log("1");
+        $("#statusmsg").html("Username and password can't be empty!");
     } else if ($("#password").val() != $("#repassword").val()) {
-        //console.log("2");
-        $("#statusmsg").html("password not same");
+        console.log("2");
+        $("#statusmsg").html("Passwords are not the same!");
     } else if ($("#password").val().length < 4) {
-        //console.log("3");
-        $("#statusmsg").html("password should be at least 4 character long");
+        console.log("3");
+        $("#statusmsg").html("Password should be at least 4 character long!");
     } else if ($("#username").val().length < 3) {
-        //console.log("4");
-        $("#statusmsg").html("username should be at least 3 character long");
+        console.log("4");
+        $("#statusmsg").html("Username should be at least 3 character long!");
     } else if (isbanned($("#username").val())) {
-        //console.log("5");
-        $("#statusmsg").html("username is banned, please change another name");
+        console.log("5");
+        $("#statusmsg").html("Username is banned, please change to another name!");
     } else {
-        //console.log("6");
+        console.log("6");
         $("#statusmsg").html("");
         $.ajax({
             url: '/user/register',
@@ -86,7 +77,7 @@ $("#register-btn").click(function() {
             },
             dataType: "json",
             success: function(data) {
-                if (data.success == true) {
+                if (data.success === true) {
                     $(window.location).attr('href', '/welcome');
                 } else {
                     if (data.code == 22) {
@@ -97,6 +88,7 @@ $("#register-btn").click(function() {
         });
     }
 });
+
 
 $("#register-link").click(function() {
     //set the inform to default

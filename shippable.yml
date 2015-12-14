@@ -9,8 +9,8 @@ before_install:
 # Activate the required node.js version. $SHIPPABLE_NODE_VERSION
   - npm install -g grunt-cli mocha istanbul
   - npm install grunt mocha istanbul --save-dev
-  - npm install grunt-mocha-istanbul --save-dev
-
+  - npm install sqlite3 ejs superagent debug
+  - npm install jshint-html-reporter jshint
 # 'npm install' is executed by default in Shippable - shown here for illustrative purposes
 install:
   - npm install

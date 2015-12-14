@@ -5,9 +5,11 @@
   "dependencies": {
     "body-parser": "^1.14.1",
     "connect": "^3.4.0",
+    "cookie-parser": "^1.4.0",
     "ejs": "^2.3.3",
     "express": "^4.13.1",
     "grunt-cli": "^0.1.13",
+    "grunt-contrib-jshint": "^0.11.3",
     "istanbul": "^0.4.0",
     "jquery": "^2.1.4",
     "md5": "^2.0.0",
@@ -28,7 +30,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "main": "index.js",
+  "main": "server.js",
   "directories": {
     "doc": "doc",
     "test": "test"
@@ -37,7 +39,7 @@
     "type": "git",
     "url": "git+https://github.com/cmusv-fse/FSE-F15-SB5-SSNoC-Stars.git"
   },
-  "author": "fiona",
+  "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/cmusv-fse/FSE-F15-SB5-SSNoC-Stars/issues"

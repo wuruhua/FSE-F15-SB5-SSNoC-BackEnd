@@ -1,22 +1,113 @@
 var user_name = $.cookie('user');
+var perf_page = $.cookie('perf_page');
+
 var user = getNode("user");
 var dropdown_status = getNode("dropdown_status");
+
 var contactlist = getNode("contact-list");
 var navbar_name = getNode("navbar_name");
+
 var socket = io.connect();
 
 $(document).ready(function() {
-    //console.log( "ready!" );
-    //console.log("chat Name:"+user_name);
+    //$.cookie("chat-type", "");
+    console.log("ready!");
+    console.log("chat Name:" + user_name);
+
+    socket.emit('PerfCheck', "contactlist");
+    socket.on('PerfGet', function() {
+        //local_user_list[nameCard.name] = nameCard.status;
+        //console.log("update list");
+        $(window.location).attr('href', '/perfmon_msg');
+
+    });
+    //Receive and update user list. Note: the user list can only be added or updated. No deleted is of user case
+
+
+
     //change name on Nav bar
-    //console.log(navbar_name.textContent);
+    console.log(navbar_name.textContent);
     navbar_name.textContent = 'Hi ' + user_name;
+
     //change name to user
-    //console.log(user.textContent);
+    console.log(user.textContent);
     user.textContent = user_name;
 });
 
+
+
+$('#perfmon').on('click', function() {
+    console.log("perfmon clicked");
+
+    console.log("perfMeasureButton"); {
+        var date = new Date();
+        var timestamp = Date.parse(new Date()) / 1000;
+
+        var announcedata = {
+            name: user_name,
+            ismsg: 0,
+            msg: "performance on",
+            time: getDate(timestamp),
+            page: "contactlist"
+        };
+
+        $.ajax({
+            url: '/user/postAnnouncement',
+            type: 'post',
+            crossDomain: true,
+            data: announcedata,
+            dataType: 'json',
+            success: function(data) {
+                //reload the page on the success
+                if (data.success === false) {
+                    alert(data.message);
+                }
+            }
+        });
+    }
+
+});
+
 socket.emit('sendstatus', "All");
+
+//receive announce_entry from server, and display
+socket.on('announcement', function(data) {
+
+    console.log("contactlist page: data.msg" + data.msg);
+    console.log("contactlist page: data.name" + data.name);
+    console.log("user_name" + user_name);
+
+    if (data.msg == "performance on") {
+        if (data.name == user_name) {
+            $.cookie("perf_master", "contactlist");
+            $(window.location).attr('href', '/perfmon');
+        } else {
+            $.cookie("perf_slave", "contactlist");
+            $(window.location).attr('href', '/perfmon_msg');
+
+        }
+    }
+
+});
+
+socket.on(user_name, function(data) {
+    if (user_name != data.author) {
+        $.notify({
+            message: "<string>" + data.author + "<strong> sent you a private message <button type='text' onclick=privateChatwith('" + data.author + "')>Chat</button>"
+        }, {
+            type: 'success',
+            offset: {
+                x: 20,
+                y: 55
+            },
+            delay: 10000,
+        });
+    }
+    createCookie('new_msg_' + data.author, 1, 100);
+    var privateTalkBtn = getNode('privateTalkBtn_' + data.author);
+    privateTalkBtn.setAttribute('class', 'btn btn-danger');
+    privateTalkBtn.textContent = 'New Msg';
+});
 
 function getShortDate(timestamp) {
     var localeSpecificTime = new Date(parseInt(timestamp) * 1000).toLocaleTimeString();
@@ -27,9 +118,10 @@ function updateScroll(element) {
     element.scrollTop = element.scrollHeight;
 }
 
+
 socket.on('updateUserList', function(rows) {
     //local_user_list[nameCard.name] = nameCard.status;
-    //console.log("update list");
+    console.log("update list");
     updateUserList(rows);
 });
 
@@ -74,6 +166,8 @@ function updateSelf(row) {
 
 function updateSingleUser(row) {
 
+    console.log(row);
+
     usr_frame = document.createElement('li');
     usr_frame.setAttribute('class', 'list-group-item');
 
@@ -92,13 +186,15 @@ function updateSingleUser(row) {
 
     //---------------------usr_info-----------------------
     usr_info = document.createElement('div');
-    usr_info.setAttribute('class', 'col-xs-6 col-sm-6');
+    usr_info.setAttribute('class', 'col-xs-5 col-sm-5');
 
     usr_info_name = document.createElement('span');
     usr_info_name.setAttribute('class', 'name');
     usr_info_name.textContent = row.username;
 
+
     usr_br = document.createElement('br');
+
     usr_info_status = document.createElement('span');
 
     //console.log(row.status);
@@ -134,13 +230,22 @@ function updateSingleUser(row) {
 
     //---------------------usr_chat_button----------------
     usr_chat_button = document.createElement('div');
-    usr_chat_button.setAttribute('class', 'col-xs-2 col-sm-2');
+    usr_chat_button.setAttribute('class', 'col-xs-3 col-sm-3');
+
+    var user_sent_new_msg = $.cookie('new_msg_' + row.username);
 
     usr_chat_button_sub = document.createElement('button');
-    usr_chat_button_sub.setAttribute('class', 'btn btn-info');
     usr_chat_button_sub.setAttribute('type', 'button');
+    usr_chat_button_sub.setAttribute('id', 'privateTalkBtn_' + row.username);
     usr_chat_button_sub.setAttribute('onclick', "privateChatwith('" + row.username + "')");
-    usr_chat_button_sub.textContent = 'Talk';
+
+    if (user_sent_new_msg > 0) {
+        usr_chat_button_sub.setAttribute('class', 'btn btn-danger');
+        usr_chat_button_sub.textContent = 'New Msg';
+    } else {
+        usr_chat_button_sub.setAttribute('class', 'btn btn-info');
+        usr_chat_button_sub.textContent = 'Talk';
+    }
 
     //---------------------clearfix------------------------
     usr_clearfix = document.createElement('div');
@@ -163,32 +268,12 @@ function updateSingleUser(row) {
 
 }
 
-function privateChatwith(to_name) {
-    //console.log("=====>Start private Chat");
-    var chatter = {
-        audience: to_name
-    };
-    $.ajax({
-        url: '/user/setAudience',
-        type: 'post',
-        data: chatter,
-        crossDomain: true,
-        dataType: 'json'
-    }).done(function(rows) {
-        if (rows != null) {
-            //console.log(chatter);
-            //console.log("Private message get success");
-            $(window.location).attr('href', '/chat');
-        }
-    }).fail(function() {
-        //console.log(chatter);
-        //console.log("Private message get fail");
-        $(window.location).attr('href', '/chat');
-    });
-}
 
 $('#pchat').on('click', function() {
-    //console.log("Start public Chat");
+
+    console.log("Start public Chat");
+
+
     $.ajax({
         url: '/user/setAudience',
         type: 'post',
@@ -198,11 +283,11 @@ $('#pchat').on('click', function() {
         crossDomain: true,
         dataType: 'json'
     }).done(function(rows) {
-        if (rows != null) {
-            //console.log("Public message get success");
-            //	$(window.location).attr('href', '/chat');
+        if (rows !== null) {
+            console.log("Public message get success");
+            //  $(window.location).attr('href', '/chat');
         }
     }).fail(function() {
-        //console.log('fail to get wall messages');
+        console.log('fail to get wall messages');
     });
 });

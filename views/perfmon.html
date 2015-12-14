@@ -2,58 +2,82 @@
 <html lang="en">
 
 <head>
-    <title>SSNOC Performance</title>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
-    <script src="script/jquery.min.js"></script>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title id="chat_title">Chat</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap-select.css" rel="stylesheet">
+    <script src="jquery/jquery.min.js"></script>
+    <script src="jquery/jquery.cookie.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootstrap/js/bootstrap-select.js"></script>
+    <script src="bootstrap/js/bootstrap-notify.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <link href="css/publicchat.css" rel="stylesheet">
 </head>
 
-<body>
+<body onload="checkmonitor()">
     <div class="container-fluid">
-        <nav class="navbar navbar-default" style="background-color: #8B0000">
-            <div class="container-fluid">
-                <!-- Logo -->
-                <div class="navbar-header">
-                    <a href="#" class="navbar-brand">SSNOC Application</a>
-                </div>
-                <!-- Menu Items -->
-                <div>
-                    <ul class="nav navbar-nav">
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">ChatPublic</a></li>
-                        <li><a href="#">ChatPrivate</a></li>
-                        <!-- drop down menu -->
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" style="background-color: #8B0000" data-toggle="dropdown">My Profile <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">Friends</a></li>
-                                <li><a href="#">Photos</a></li>
-                                <li><a href="#">Settings</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <!--right align -->
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="#">Logout</a></li>
-                    </ul>
-                </div>
+        <nav class="navbar navbar-inverse" style="margin-bottom:0px;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mySearchbar" title="Toggle Search" style="padding:6px 10px;">
+                    <span class="glyphicon glyphicon-search text-muted"></span>
+                </button>
+                <a class="navbar-brand" id="navbar_name">Hello <span>Liyuan Ding</span></a>
             </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="announcement">Post Announcement</a></li>
+                    <li><a onclick="publicChatwith()">Public Chat</a></li>
+                    <li><a href="contactlist">User List</a></li>
+                    <li><a href="welcome">Share Status</a></li>
+                    <li><a href="perfmon">Measure Performance</a></li>
+                    <li class="active"><a href="administrator">Administrator</a></li>
+                    <li><a href="login" onclick="logoutButton()">Log Out</a></li>
+                    <li class="hidden-xs active">
+                        <a type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mySearchbar" title="Toggle Search" style="margin:0px;">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
         </nav>
         <h3>Performance Measurement</h3>
-        <p>Measure the performance of the SSNoC application in terms of throughput: http requests processed by the server per unit time. This does not affect the main system database.</p>
+        <p>Measure the performance of the SSNoC application in terms of throughput: http requests processed by the server per unit time. This does not affect the main system database.
+            <BR> Synchronous Method: HTTP requests are sent at regular interval irrespective of response received by client with POST-GET pair followed by another pair. Wait for specified interval and then send POST,GET requests.
+            <BR> Asynchronous Method: HTTP requests are sent at regular interval irrespective of response received by client with bunch of POST followed by bunch of GET. Wait for specified interval and then send POST,GET requests.
+            <BR>
+        </p>
+        <h3>Performance Profile</h3>
         <form role="form">
+            <div class="form-grp1">
+                <label class="checkbox-inline">
+                    <input name="sync" type="checkbox" value="">Synchronous Method</label>
+                <label class="checkbox-inline">
+                    <input name="async" type="checkbox" value="">Asynchronous Method</label>
+            </div>
+            <div class="form-grp2">
+                <label id="asyncText" for="inputdefault">Request Interval(in milli seconds)</label>
+                <input class="form-control" id="reqInterval" type="text">
+            </div>
             <div class="form-group">
                 <label for="inputdefault">Test duration(in seconds)</label>
                 <input class="form-control" id="testTime" type="text">
             </div>
-            <a href="#" id="start" style="background-color: #8B0000" class="btn btn-info btn-lg">Start</a>
-            <a href="#" id="stop" style="background-color: #8B0000" class="btn btn-info btn-lg">Stop</a>
-            <a href="#" id="pause" style="background-color: #8B0000" class="btn btn-info btn-lg">Pause</a>
+            <a href="#" id="start" style="background-color: #000000" class="btn btn-info btn-lg">Start</a>
+            <a href="#" id="stop" style="background-color: #000000" class="btn btn-info btn-lg">Stop</a>
             <h2>Performance statistics</h2>
-            <table class="table table-condensed">
+            <table id="thead" class="table table-condensed">
                 <thead>
                     <tr>
                         <th>Measurement factor</th>
@@ -62,33 +86,50 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Total HTTP-POST sent</td>
-                        <td><span id="totalpost"></span></td>
-                    </tr>
-                    <tr>
                         <td>HTTP-POST through put rate</td>
                         <td><span id="postpersec"></span></td>
-                    </tr>
-                    <tr>
-                        <td>Average time per HTTP-POST request</td>
-                        <td><span id="avgtimeperpost"></span></td>
-                    </tr>
-                    <tr>
-                        <td>Total HTTP-GET sent</td>
-                        <td><span id="totalget"></span></td>
                     </tr>
                     <tr>
                         <td>HTTP-GET through put rate</td>
                         <td><span id="getpersec"></span></td>
                     </tr>
                     <tr>
+                        <td>Total HTTP-POST sent</td>
+                        <td><span id="totalpost"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Total HTTP-GET sent</td>
+                        <td><span id="totalget"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Average time per HTTP-POST request</td>
+                        <td><span id="avgtimeperpost"></span></td>
+                    </tr>
+                    <tr>
                         <td>Average time per HTTP-GET request</td>
                         <td><span id="avgtimeperget"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Total Request per sec</td>
+                        <td><span id="rps"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Total Error count</td>
+                        <td><span id="errcnt"></span></td>
+                    </tr>
+                    <tr>
+                        <td>POST Peak response time</td>
+                        <td><span id="postprt"></span></td>
+                    </tr>
+                    <tr>
+                        <td>GET Peak response time</td>
+                        <td><span id="getprt"></span></td>
                     </tr>
                 </tbody>
             </table>
         </form>
     </div>
+    <script src="script/common.js"></script>
     <script src="script/perfmon.js"></script>
 </body>
 

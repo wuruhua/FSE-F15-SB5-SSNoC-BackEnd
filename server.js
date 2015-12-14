@@ -12,20 +12,27 @@ var server = http.Server(app);
 var io = require('socket.io')(server);
 var port = 5000;
 var userBiz = require('./app/controller/userBiz');
-var publicMsgBiz = require('./app/controller/publicMsgBiz');
-var privMsgBiz = require('./app/controller/privMsgBiz');
+// var publicMsgBiz = require('./app/controller/publicMsgBiz');
+// var privMsgBiz = require('./app/controller/privMsgBiz');
 var PerfMonBiz = require('./app/controller/perfMonBiz');
-
+var adminBiz = require('./app/controller/adminBiz');
+var controller = require('./app/controller/controller');
 /*var userDao = require("./app/model/userDao")(db);*/
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
 //setup dababase
 var fs = require("fs");
 var file = "./chatroom.db";
 
+/*var users = {};
+var inpriv = {};*/
 var users = {};
 var inpriv = {};
 var mode;
-var performance_on;
+var performance_on = 0;
+var performance_page = 'chat';
+//var perf_src_page = {};
+//var perf_dest_page = {};
 var exists = fs.existsSync(file);
 if (!exists) {
     //console.log("Creating DB file.");
@@ -33,98 +40,114 @@ if (!exists) {
 }
 
 var sqlite3 = require("sqlite3").verbose();
+var md5 = require('md5');
+
 var DB = new sqlite3.Database(file);
 //initialize the userBiz
 
-var PublicMessageDao = require("./app/model/PublicMessageDao");
+//var PublicMessageDao = require("./app/model/PublicMessageDao");
 var userDao = require("./app/model/userDao");
 userBiz = new userBiz(DB);
-PublicMessageDao = new PublicMessageDao(DB);
-publicMsgBiz = new publicMsgBiz(DB);
-privMsgBiz = new privMsgBiz(DB);
+
+app.set('testing', true);
+
+// PublicMessageDao = new PublicMessageDao(DB);
+// publicMsgBiz = new publicMsgBiz(DB);
+// privMsgBiz = new privMsgBiz(DB);
 userDao = new userDao(DB);
 PerfMonBiz = new PerfMonBiz(DB);
+adminBiz = new adminBiz(DB,app);
+controller = new controller();
+
 
 //initialize the router
-app.use(require('body-parser').urlencoded({
-    extended: true
-}));
-require('./routes')(app, DB, userBiz, publicMsgBiz, privMsgBiz, PerfMonBiz);
+app.use(bodyParser.json());
+app.use(require('body-parser').urlencoded({extended: false}))
+app.use(cookieParser());
+require('./routes')(app, DB, userBiz,  PerfMonBiz, adminBiz, controller);
+
+
+
 /* -------------------------------------------*
  *             set up homepage
  * -------------------------------------------*/
 app.engine('.html', require('ejs').__express); //ejs : Embedded JavaScript
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
+
 app.get('/', function(req, res) {
     //res.render('contactlist');
     res.render('login');
 });
-app.use(express.static(path.join(__dirname, 'public/')));
-// app.use(bodyParser.urlencoded({limit: '50mb'}));
-// app.use(bodyParser.json({limit: '50mb'}));
-// app.use(bodyParser({limit: '500mb'}));
-// app.use(bodyParser.json({limit: '500mb'}));
-//  app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-//   limit: '500mb',
-//    extended: true
 
-//  }));
-//  console.log('Limit file size: '+limit);
+app.use(express.static(path.join(__dirname, 'public/')));
 
 //var rows= [];
 /*module.exports.emitUser = function(username,newuser){
-	console.log("-----------------in-----------");
+    console.log("-----------------in-----------");
     // this function expects a socket_io connection as argument
-	PublicMessageDao.getMessages();
-	io.sockets.on('connection',function(socket){
-    	io.sockets.emit('welcomeMessage', {name:username, NewUser:newuser});
-	});
+    PublicMessageDao.getMessages();
+    io.sockets.on('connection',function(socket){
+        io.sockets.emit('welcomeMessage', {name:username, NewUser:newuser});
+    });
 }*/
+
+
+
+
 /* -------------------------------------------*
  *             Listen to client
  * -------------------------------------------*/
 io.sockets.on('connection', function(socket) {
+
+
+
     /*module.exports.emitPrivMsgHistory = function(rows,username,touser){
         // this function expects a socket_io connection as argument
         // now we can do whatever we want:
         console.log("inpriv[username] " +inpriv[username] +username);
-        	    console.log("inpriv[touser] " +inpriv[touser] +touser);
+                console.log("inpriv[touser] " +inpriv[touser] +touser);
 
-    	if(inpriv[username] == true)
-    	{
-    		console.log("sending priv from "+username);
-    		users[username].emit('load priv msgs', rows,username,touser);
-    	}
-    	if(inpriv[touser] == true)
-    	{	
-    		console.log("sending priv to "+touser);	
-    		users[touser].emit('load priv msgs', rows,username,touser);
-    	}
+        if(inpriv[username] == true)
+        {
+            console.log("sending priv from "+username);
+            users[username].emit('load priv msgs', rows,username,touser);
+        }
+        if(inpriv[touser] == true)
+        {   
+            console.log("sending priv to "+touser); 
+            users[touser].emit('load priv msgs', rows,username,touser);
+        }
     }*/
+
     module.exports.emitAnHistory = function(rows) {
-        // this function expects a socket_io connection as argument
-        // now we can do whatever we want:
-        //PublicMessageDao.getMessages();
-        // console.log(rows);
         io.sockets.emit('load announce', rows);
 
     };
 
     module.exports.emitUserList = function(rows) {
-        // this function expects a socket_io connection as argument
-        // now we can do whatever we want:
-        //console.log("emit user row?" + rows.length)
-            //PublicMessageDao.getMessages();
-        //console.log("rows" + rows);
         io.sockets.emit('updateUserList', rows);
-
     };
 
-    socket.on('PerfCheck', function() {
-        if (performance_on == 1)
-            socket.emit("PerfGet", "All");
-    });
+    module.exports.emitPri = function(username, pri, cookie) {
+        var data = {};
+        data.username = username;
+        data.pri = pri;
+        data.cookie = cookie;
+        io.sockets.emit('updatePri_' + username, data);
+    };
+
+    module.exports.emitLogout = function(emit) {
+        console.log("kickout:" + emit.username);
+        io.sockets.emit('Logout_' + emit.username, emit);
+    };
+
+    module.exports.emitAnnouncement = function(emit) {
+        if (emit.msg == "performance on") {
+            performance_on = 1;
+        }
+        io.sockets.emit('announcement', emit);
+    };
 
 
     socket.on('newuser', function(username) {
@@ -141,40 +164,18 @@ io.sockets.on('connection', function(socket) {
         delete inpriv[socket.nickname];
     });
 
-
-    /*socket.on('sendPrivMsg', function(data){
-		console.log("Loading ************ private messages"+ socket.nickname);
-		console.log("data.name" +data.name);
-		console.log("data.toname" +data.toname);
-		//PrivateMessageDao.savePrivMessages(data);
-		//if(inpriv[data.toname] == false
-		if(inpriv[data.toname] == false)
-		{
-			users[data.toname].emit('inc priv msg',data.toname, data.name);
-		}
-		//console.log("get all user:"+rows.length);    
-		//callback(rows);
-		//userBiz.updatePrivUser();
-		privMsgBiz.savePrivMessages(data);
-		userBiz.getAllUser();
-	});*/
-
     socket.on("sendPrivateMessage", function(msg) {
         var authorSelf = msg.author + 'self';
-        //console.log("author"+msg.author);
-        //console.log("targ"+msg.targ);
+
         io.sockets.emit(msg.author, msg);
         io.sockets.emit(msg.targ, msg);
-        //io.sockets.emit('privateChat', msg);
-        //console.log("emit sendPrivateMessage");
-        //console.log(msg.author);
-        //console.log(msg.targ);
-    });
 
+    });
     // load all history announcement
     socket.on('sendAn', function() {
         //console.log("Loading announcements");
-        publicMsgBiz.getAnnouncements();
+        controller.loadannouncement();
+        //publicMsgBiz.getAnnouncements();
 
     });
     // refresh userlist
@@ -189,21 +190,39 @@ io.sockets.on('connection', function(socket) {
         userBiz.getAllUser();
     });
 
-    socket.on('postAnnouncement', function(data) {
-        //console.log("postannounce");
-        publicMsgBiz.saveAnnouncement(data);
-        //console.log("data" + data.msg);
-        if (data.msg == "performance on") {
-            performance_on = 1;
-        }
-        io.sockets.emit('announcement', data);
-    });
-
     socket.on('stopmeasure', function() {
         //console.log("postannounce");
         //publicMsgBiz.saveAnnouncement(data);
+        io.sockets.emit('chatroom', performance_page);
+
+        /*  for(var sock in perf_src_page)
+            {
+                console.log("sock"+sock);
+                console.log("perf_src_page"+perf_src_page[sock]);
+                io.sockets.emit('perf_src',perf_src_page[sock]);
+            }
+
+            for(var sock in perf_dest_page)
+            {
+                console.log("sock"+sock);
+                console.log("perf_dest_page"+perf_dest_page[sock]);
+                io.sockets.emit('perf_dest',perf_dest_page[sock]);
+            }*/
+
         performance_on = 0;
-        io.sockets.emit('chatroom', "All");
+    });
+
+
+    socket.on('PerfCheck', function(data) {
+
+        if (performance_on == 1) {
+            //perf_dest_page[socket] = data;
+            console.log("Emitting perfGet");
+	performance_page = data;
+           // console.log("=================>performance_page<====================" + perf_dest_page[socket]);
+
+            io.sockets.emit("PerfGet", "All");
+        }
     });
 
     //get the message from a user and broadcast it
@@ -211,19 +230,7 @@ io.sockets.on('connection', function(socket) {
         io.sockets.emit("getWallMessage", msg);
         //console.log("emit getWallMessage");
     });
-    // socket.on('sendDialog', function(data){
-    // 	inpriv[socket.nickname] = false;
-    // 	/* Add to message table */
-    //        publicMsgBiz.saveMessage(data);
-    // 	/*Broadcast*/
-    // 	//io.sockets.emit('dialog_entry',{name:data.name, msg:data.msg, time:data.time});
-    // 	//users[socket.nickname].emit('load old msgs', rows);
-    // 	for(var k in users)
-    // 	{
-    // 	  if(inpriv[k] == false)
-    // 		users[k].emit('dialog_entry',{name:data.name, msg:data.msg, time:data.time});
-    // 	}
-    // });
+
     socket.on('logoutUser', function(msg) {
         userBiz.updateOnline(msg.name, 0);
         userBiz.getAllUser();
@@ -233,16 +240,27 @@ io.sockets.on('connection', function(socket) {
     //support for uploading video/image
     socket.on('uploadfile', function(msg) {
         console.log("received event and emit uploadfile to client!");
-        console.log("server receive username: "+msg.name);
-       // console.log("server receive message: "+msg.msg);
+        console.log("server receive username: " + msg.name);
+        // console.log("server receive message: "+msg.msg);
         // console.log("server receive file type: "+data.type);
 
         io.sockets.emit('newfile', msg);
     });
 });
-/* ------------------------------------*
- *       listen upon connection
- * ------------------------------------*/
-server.listen(port, function() {
-    console.log('listening on localhost:' + port);
+
+var PORT = port;
+
+var serverInitialized = function(port) {
+    //fs.writeFile('encode.txt', Date.parse(new Date()), 'utf8');
+    console.log('listening on the localhost:' + port);
+};
+
+var app = server.listen(port, serverInitialized(port)).on('error', function(err) {
+    if (err.code === 'EADDRINUSE') {
+        PORT++;
+        HOST = 'http://localhost:' + PORT;
+        app = server.listen(PORT, serverInitialized(PORT));
+        //app = server.listen(port);
+    }
 });
+module.exports.app = app;
