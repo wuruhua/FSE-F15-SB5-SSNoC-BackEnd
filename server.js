@@ -259,7 +259,7 @@ var app = server.listen(process.env.PORT || 5000, serverInitialized(process.env.
     if (err.code === 'EADDRINUSE') {
         PORT++;
         HOST = 'http://localhost:' + PORT;
-        app = server.listen(PORT, serverInitialized(PORT));
+        app = server.listen(process.env.PORT || 5000, serverInitialized(process.env.PORT || 5000));
         //app = server.listen(port);
     }
 });
