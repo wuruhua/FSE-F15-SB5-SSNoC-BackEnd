@@ -248,14 +248,14 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
-var PORT = port;
+var PORT = process.env.PORT || 5000;
 
 var serverInitialized = function(port) {
     //fs.writeFile('encode.txt', Date.parse(new Date()), 'utf8');
     console.log('listening on the localhost:' + port);
 };
 
-var app = server.listen(port, serverInitialized(port)).on('error', function(err) {
+var app = server.listen(process.env.PORT || 5000, serverInitialized(process.env.PORT || 5000)).on('error', function(err) {
     if (err.code === 'EADDRINUSE') {
         PORT++;
         HOST = 'http://localhost:' + PORT;
